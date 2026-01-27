@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 
-const PhotoFrame = ({ imageUrl, text, x , y }) => {
+const PhotoFrame = ({ imageUrl, text, initialXMobile = "35%", initialYMobile = "40%", initialXDesktop = "55%", initialYDesktop = "15%"}) => {
+  console.log(imageUrl)
   const [dimentions, setDimentions] = useState({ initialX:"50%", initialY:"10%"});
 
   useEffect(() => {
     if(window.visualViewport.width < 768) {
-      setDimentions({ initialX:"35%", initialY:"40%"});
+      setDimentions({ initialX:initialXMobile, initialY:initialYMobile});
     } else {
-      setDimentions({ initialX:"55%", initialY:"15%"});
+      setDimentions({ initialX:initialXDesktop, initialY:initialYDesktop});
     }
-  },[]);
+  },[initialXDesktop, initialXMobile, initialYDesktop, initialYMobile]);
   
   // const handleDrag = (e, data) => {
   // };
@@ -40,9 +41,9 @@ const PhotoFrame = ({ imageUrl, text, x , y }) => {
           alt="Frame Content"
           className="shadow-inset-light min-w-full sm:max-h-[35vh] object-contain bg-stone-800 pointer-events-none border-2 border-neutral-400 border-b-white border-t-stone-400 border-r-white"
         />
-        <div className=" sm:mt-2 font-rouge mb-2 sm:mb-4 text-md sm:text-2xl font-bold text-stone-800">
+        {text ? <div className=" sm:mt-2 font-rouge mb-2 sm:mb-4 text-md sm:text-2xl font-bold text-stone-800">
           {text}
-        </div>
+        </div>: <span className='text-neutral-400 italic'>Sin mensaje</span>}
       </div>
     </Draggable>
     </div>

@@ -226,7 +226,7 @@ const Fireworks = () => {
       // loader.load( 'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function ( font ) {
       loader.load("fonts/helvetiker_regular.typeface.json", function (font) {
         // ♡ η
-        const phrases = ["I♡U", "IηU","Nath","Naty", "Te amo", "TE AM♡"]; //['Texto aqui', 'Otra frase', 'Y otra más'];
+        const phrases = ["I♡U", "IηU", "Te amo", "TE AM♡"]; //['Texto aqui', 'Otra frase', 'Y otra más'];
         const geometries = [];
         for (let i = 0; i < phrases.length; i++) {
           geometries.push(

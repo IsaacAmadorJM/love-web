@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import Draggable from "react-draggable";
 
 const TinyCharacter = ({ image, position, delay, redirectUrl, direction, duration, size, dialogImage = "dialog.png",
     dialogDuration = 3000, // Duración de la burbuja en ms
@@ -34,7 +33,7 @@ const TinyCharacter = ({ image, position, delay, redirectUrl, direction, duratio
 
       return () => clearInterval(dialogTimer);
     }
-  }, [isVisible, dialogDuration, dialogInterval]);
+  }, [isVisible, dialogDuration, dialogInterval, duration]);
 
   const handleClick = () => {
     if (redirectUrl) {
@@ -49,7 +48,7 @@ const TinyCharacter = ({ image, position, delay, redirectUrl, direction, duratio
       // <Draggable axis="both" bounds="parent">
       <div style={{ position: "absolute",width:size, top: position.top, left: position.left, bottom:position.bottom, right:position.right, transform: "translate(-50%, -50%)", zIndex: 9999 }}>
         {/* Burbuja de diálogo */}
-        {/* {showDialog && (
+        {showDialog && (
           <motion.img
             src={dialogImage}
             alt="Dialog Bubble"
@@ -67,7 +66,7 @@ const TinyCharacter = ({ image, position, delay, redirectUrl, direction, duratio
               pointerEvents: "none",
             }}
           />
-        )} */}
+        )}
 
         {/* Personaje */}
         <motion.img

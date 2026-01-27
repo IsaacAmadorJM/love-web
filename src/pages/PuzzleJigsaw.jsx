@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Shape, Image as KonvaImage } from "react-konva";
+import { useEffect, useRef, useState } from "react";
+import { Stage, Layer, Shape} from "react-konva";
+import Konva from "konva";
+
 
 const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) => {
   const [image, setImage] = useState(null);
@@ -39,6 +41,7 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
   useEffect(() => {
     const playSongOnFirstClick = () => {
       song.volume = 0.1;
+      song.loop = true; 
       song.play();
       document.removeEventListener("click", playSongOnFirstClick);
     };
@@ -315,19 +318,36 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
   if (!image) return null;
 
   const handleDragStart = (e) => {
-    e.target.getStage().container().style.cursor = 'grabbing';
-    const id = e.target.id();
-    e.target.moveToTop();
-    setPieces(
-      pieces.map((piece) => ({
-        ...piece,
-        isDragging: piece.id === id,
-      }))
-    );
-  };
+  const node = e.target;
+  node.moveToTop();
+
+  node.to({
+    scaleX: 1.1,
+    scaleY: 1.1,
+    duration: 0.01,
+    easing: Konva.Easings.EaseOut,
+  });
+
+  e.target.getStage().container().style.cursor = "grabbing";
+
+  const id = node.id();
+  setPieces(pieces.map(p => ({
+    ...p,
+    isDragging: p.id === id,
+  })));
+};
 
   const handleDragEnd = (e) => {
-    e.target.getStage().container().style.cursor = 'grab';
+    const node = e.target;
+
+  node.to({
+    scaleX: 1,
+    scaleY: 1,
+    duration: 0.15,
+    easing: Konva.Easings.EaseOut,
+  });
+
+  e.target.getStage().container().style.cursor = "grab";
     const piece = e.target;
     let tolerance = Math.max(pieces[0].width, pieces[0].height) * 0.18;
     if(window.innerWidth < 768){
@@ -371,6 +391,7 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
     }
   };
 
+ 
   return (
     <div className="w-full h-[100dvh] flex justify-center items-center">
     
@@ -422,7 +443,7 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
             
             stroke="#000"
             strokeWidth={
-              piece.isDragging ? 2.5 : piece.isCorrectPlace ? 0.5 : 1.4
+              piece.isDragging ? 1.7 : piece.isCorrectPlace ? 0.5 : 1.4
             }
             
             scaleX={piece.isDragging ? 1.1 : 1}
@@ -441,3 +462,4 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
 };
 
 export default PuzzleJigsaw;
+
