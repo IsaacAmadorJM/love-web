@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import PhotoFrame from "./PhotoFrame";
-import { FiCopy } from "react-icons/fi";
+import { FiCopy, FiLink, FiUpload } from "react-icons/fi";
 
 const clamp = (v, min, max, def) => {
   if (Number.isNaN(v)) return def;
@@ -9,40 +9,92 @@ const clamp = (v, min, max, def) => {
   return v;
 };
 
+const tabs = [
+  {
+    title: "URL",
+    value: "url",
+    icon: FiLink,
+  },
+  {
+    title: "Archivo",
+    value: "file",
+    icon: FiUpload,
+  },
+];
+
 export default function UrlBuilder() {
   const [x, setX] = useState(5);
   const [y, setY] = useState(7);
+
   const [imgUrl, setImgUrl] = useState(
-    "https://a.storyblok.com/f/112937/568x379/b8d91ebdb6/image-2019-02-12.jpg/m/620x0/filters:quality(70)/",
+    "https://a.storyblok.com/f/112937/568x379/b8d91ebdb6/image-2019-02-12.jpg",
   );
-  console.log(imgUrl);
+
+  const [imageFile, setImageFile] = useState(null);
   const [text, setText] = useState(
     "No puedo imaginar un mundo en el que no estés tú",
   );
   const [url, setUrl] = useState("");
 
+  const [mode, setMode] = useState("url");
+  const [isUploading, setIsUploading] = useState(false);
+
   const safeX = clamp(Number(x), 1, 50, 5);
   const safeY = clamp(Number(y), 1, 50, 7);
   const safeText = text.slice(0, 400);
 
-  // const url = useMemo(() => {
-  //   const params = new URLSearchParams({
-  //     x: safeX,
-  //     y: safeY,
-  //     img: imgUrl,
-  //     txt: safeText,
-  //   });
-  //   return `${window.location.origin}?${params.toString()}`;
-  // }, [safeX, safeY, imgUrl, safeText]);
+  const CLOUD_NAME = "dwxm3k3x1";
+  const UPLOAD_PRESET = "mi_preset";
 
-  const onGenerateUrl = () => {
+  // 👉 URL SOLO PARA PREVIEW (sin subir nada)
+  const previewUrl = useMemo(() => {
+    if (imageFile) return URL.createObjectURL(imageFile);
+    return imgUrl;
+  }, [imageFile, imgUrl]);
+
+  const uploadToCloudinary = async () => {
+    if (!imageFile) return null;
+
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      { method: "POST", body: formData },
+    );
+
+    const data = await res.json();
+    return data.secure_url;
+  };
+
+  const onGenerateUrl = async () => {
+    if (isUploading) return;
+
+    let finalImgUrl = imgUrl;
+
+    if (mode === "file") {
+      if (!imageFile) return alert("Selecciona una imagen");
+
+      setIsUploading(true);
+      const uploadedUrl = await uploadToCloudinary();
+      setIsUploading(false);
+
+      if (!uploadedUrl) return;
+
+      setImgUrl(uploadedUrl);
+      setImageFile(null); // limpia preview local
+      finalImgUrl = uploadedUrl;
+    }
+
     const params = new URLSearchParams({
       x: safeX,
       y: safeY,
       txt: safeText,
+      img: finalImgUrl,
     });
-    console.log(imgUrl);
-    setUrl(`${window.location.origin}?${params.toString()}&img=${imgUrl}`);
+
+    setUrl(`${window.location.origin}?${params.toString()}`);
   };
 
   const onCopy = async () => {
@@ -51,132 +103,117 @@ export default function UrlBuilder() {
   };
 
   return (
-    <div className="max-w-dvw h-dvh bg-red-200 flex justify-center text-lg gap-0 relative">
-      {/* <div className="h-dvh w-full absolute flex justify-center sm:w-96 bg-black/20 sm:items-center">
-      <label className="flex flex-col w-80 items-center gap-2"> Previsualización:
-        
-       <ImageGridPreview
-       className=''
-       imageUrl={imgUrl}
-       rows={safeX}
-       cols={safeY}
-       maxW={250}
-       maxH={250}
-       />
-       <span className="text-xs text-neutral-700 text-center">* Es solo un ejemplo para ver el tamaño de las piezas en comparación con el puzzle completo</span>
-       </label>
-      </div> */}
-      <div className=" flex flex-col font-semibold tracking-wider items-center w-full text-black   h-dvh  p-4 gap-2">
-        <div className="flex">
-          <label className="flex flex-col w-80 items-center gap-2">
-            Previsualización:
-            <ImageGridPreview
-              className=""
-              imageUrl={imgUrl}
-              rows={safeX}
-              cols={safeY}
-              maxW={250}
-              maxH={250}
-            />
-            <span className="text-xs text-neutral-700 text-center">
-              * Es solo un ejemplo para ver el tamaño de las piezas en
-              comparación con el puzzle completo
-            </span>
-            <div className="flex gap-2">
-              <label className="flex items-center">
-                Filas:
-                <input
-                  type="number"
-                  className="w-16 h-8 rounded-lg px-2 font-normal bg-red-100"
-                  min={1}
-                  onChange={(e) => setX(e.target.value)}
-                  max={50}
-                  value={x}
-                  placeholder="Rows (1-50)"
-                />
-              </label>
-              <label className="flex items-center ">
-                Columnas:
-                <input
-                  type="number"
-                  className="w-16 h-8 rounded-lg px-2 font-normal bg-red-100"
-                  min={1}
-                  max={50}
-                  value={y}
-                  onChange={(e) => setY(e.target.value)}
-                  placeholder="Cols (1-50)"
-                />
-              </label>
-            </div>
-          </label>
+    <div className="max-w-dvw h-dvh bg-red-200 flex justify-center text-lg relative">
+      <div className="flex flex-col font-semibold items-center w-full h-dvh p-4 gap-3">
+        {/* PREVIEW GRID */}
+        <ImageGridPreview
+          imageUrl={previewUrl}
+          rows={safeX}
+          cols={safeY}
+          maxW={250}
+          maxH={250}
+        />
+        <span className="text-xs text-neutral-600 text-center">
+          * Es solo un ejemplo para ver el tamaño de las piezas en comparación
+          con el puzzle completo
+        </span>
+        {/* Rows / Cols */}
+        <div className="flex gap-2">
+          <input
+            type="number"
+            className="w-16 h-8 rounded-lg px-2 bg-red-100"
+            min={1}
+            max={50}
+            value={x}
+            onChange={(e) => setX(e.target.value)}
+          />
+          <input
+            type="number"
+            className="w-16 h-8 rounded-lg px-2 bg-red-100"
+            min={1}
+            max={50}
+            value={y}
+            onChange={(e) => setY(e.target.value)}
+          />
         </div>
 
-        <label className="flex flex-col ">
-          Enlace de la imagen:
+        <Tabs tabs={tabs} onTabChange={setMode} />
+
+        {/* IMAGE INPUT */}
+        {mode === "url" ? (
           <input
             type="url"
             value={imgUrl}
-            onChange={(e) => setImgUrl(e.target.value)}
-            className="min-w-[400px] sm:min-w-[600px] h-8 rounded-lg px-2 font-normal bg-red-100"
-            placeholder="Image URL"
+            onChange={(e) => {
+              setImgUrl(e.target.value);
+              setImageFile(null);
+            }}
+            className="min-w-[400px] sm:min-w-[600px] h-8 rounded-lg px-2 bg-red-100"
           />
-        </label>
-        <label className="flex flex-col ">
-          Mensaje especial:
-          <textarea
-            maxLength={400}
-            rows="3"
-            className="min-w-[400px] sm:min-w-[600px]  h-auto  rounded-lg px-2 font-normal bg-red-100"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Mensaje (máx 400 caracteres)"
+        ) : (
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setImageFile(e.target.files[0])}
+            className="min-w-[400px] sm:min-w-[600px]"
           />
-        </label>
+        )}
+
+        {/* TEXT */}
+        <textarea
+          maxLength={400}
+          rows={3}
+          className="min-w-[400px] sm:min-w-[600px] rounded-lg px-2 bg-red-100"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+
+        {/* GENERATE */}
         <button
-          type="button"
-          onClick={() => {
-            onGenerateUrl();
-          }}
-          className="bg-green-600 mb-2 text-white tracking-widest px-8 py-2 sm:py-4 rounded-lg border-black border-2"
+          onClick={onGenerateUrl}
+          disabled={isUploading}
+          className={`px-8 py-3 rounded-lg border-2 tracking-widest ${
+            isUploading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-green-600 text-white"
+          }`}
         >
-          Generar Enlace
+          {isUploading ? "Subiendo imagen..." : "Generar Enlace"}
         </button>
 
-        <p>URL generada:</p>
+        {/* RESULT */}
         <div className="relative min-w-[400px] sm:min-w-[600px]">
           <input
             type="url"
             value={url}
-            className="w-full h-10 rounded-lg px-2 pr-10 font-normal bg-red-100"
-            placeholder="enlace"
-            onFocus={(e) => e.target.select()}
             readOnly
+            className="w-full h-10 rounded-lg px-2 pr-10 bg-red-100"
+            onFocus={(e) => e.target.select()}
           />
           <button
-            type="button"
             onClick={onCopy}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-xl text-gray-700 hover:text-black"
-            title="Copiar"
+            className="absolute right-2 top-1/2 -translate-y-1/2"
           >
             <FiCopy />
           </button>
         </div>
       </div>
-      <div className="bg-black w-30 h-dvh">
-        <PhotoFrame
-          initialXDesktop="70%"
-          initialYDesktop="10%"
-          initialYMobile="5%"
-          initialXMobile="70%"
-          imageUrl={imgUrl}
-          text={safeText}
-        />
-      </div>
+
+      {/* PHOTO FRAME PREVIEW */}
+      <PhotoFrame
+        initialXDesktop="75%"
+        initialYDesktop="10%"
+        initialYMobile="5%"
+        initialXMobile="70%"
+        imageUrl={previewUrl}
+        text={safeText}
+      />
     </div>
   );
 }
 
 import { useEffect } from "react";
+import { Tabs } from "./ImageTabs";
 
 function useImageSize(src) {
   const [size, setSize] = useState({ w: 0, h: 0 });
