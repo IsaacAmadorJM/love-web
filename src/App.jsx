@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import PuzzleJigsaw from "./pages/PuzzleJigsaw";
 import Fireworks from "./pages/Fireworks";
+import Card3d from "./pages/Card3d";
 import PhotoFrame from "./components/PhotoFrame";
 import ImageModal from "./components/ImageModal";
 import UrlBuilder from "./components/UrlBuilder";
@@ -18,8 +19,8 @@ function App() {
   const navigate = useNavigate();
 
   // helpers con defaults
-  const rows = clamp(Number(searchParams.get("x")), 1, 50, 5);
-  const cols = clamp(Number(searchParams.get("y")), 1, 50, 7);
+  const rows = clamp(Number(searchParams.get("x")), 1, 50, 2);
+  const cols = clamp(Number(searchParams.get("y")), 1, 50, 3);
   const imageUrl = searchParams.get("img") || "https://a.storyblok.com/f/112937/568x379/b8d91ebdb6/image-2019-02-12.jpg/m/620x0/filters:quality(70)/";
   const text = searchParams.get("txt") || "No puedo imaginar un mundo en el que no estés tú";
 
@@ -39,11 +40,11 @@ function App() {
   };
 
   return (
-    <Routes>
+    <Routes >
       <Route
         path="/"
         element={
-          <>
+          <div >
             <PuzzleJigsaw
               handleGameFinish={handleGameFinish}
               imageUrl={imageUrl}
@@ -65,13 +66,19 @@ function App() {
               description="Dale a ver los fuegos artificiales :)"
               text="El amor es la fuerza más humilde, pero la más poderosa."
             />
-          </>
+          </div>
         }
       />
 
       <Route
         path="/fireworks"
         element={gameFinished ? <Fireworks /> : <Navigate to="/" />}
+      />
+      <Route
+          path="/card"
+          element={
+            <Card3d path="/model3d/kenny.glb" imgUrl="southpark.webp" />
+          }
       />
       <Route
       path='/crear'

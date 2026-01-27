@@ -15,19 +15,25 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
     img.src = imageUrl;
 
     img.onload = () => {
+      const isVertical = window.visualViewport.height > window.visualViewport.width;
       let newScale;
-      if (window.visualViewport.height < 768) {
-        newScale = (window.visualViewport.width / img.width) * 0.9;
-        if(img.height > img.width){
-          newScale = window.visualViewport.height / img.height * 0.6;
-        }
+      
+      if (isVertical) {
+        // Orientación vertical: puzzle ocupa mitad superior
+        const availableWidth = window.visualViewport.width * 0.9;
+        const availableHeight = window.visualViewport.height * 0.45; // 45% para dar margen
+        
+        const scaleByWidth = availableWidth / img.width;
+        const scaleByHeight = availableHeight / img.height;
+        newScale = Math.min(scaleByWidth, scaleByHeight);
       } else {
-        const maxSize = window.visualViewport.width * 0.46;
-        if (img.height > img.width) {
-          newScale = maxSize / img.height;
-        } else {
-          newScale = maxSize / img.width;
-        }
+        // Orientación horizontal: puzzle ocupa mitad izquierda
+        const availableWidth = window.visualViewport.width * 0.45; // 45% para dar margen
+        const availableHeight = window.visualViewport.height * 0.9;
+        
+        const scaleByWidth = availableWidth / img.width;
+        const scaleByHeight = availableHeight / img.height;
+        newScale = Math.min(scaleByWidth, scaleByHeight);
       }
 
       setScale(newScale);
@@ -37,7 +43,7 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
     
   }, [imageUrl, rows, columns]);
 
-  const song = new Audio("song.mp3");
+  const song = new Audio("/song.mp3");
   useEffect(() => {
     const playSongOnFirstClick = () => {
       song.volume = 0.1;
@@ -56,6 +62,7 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
   const generatePuzzlePieces = (img, newScale) => {
     const pieceWidth = (img.width / columns) * newScale;
     const pieceHeight = (img.height / rows) * newScale;
+    const isVertical = window.visualViewport.height > window.visualViewport.width;
 
     const newPieces = [];
     const newSnapPieces = [];
@@ -63,13 +70,17 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
     let id = 0;
     let targetX;
     let targetY;
-    if (window.innerWidth < 768) {
-      targetX = window.visualViewport.width * 0.5 - img.width * newScale * 0.5;
-      targetY = window.visualViewport.height * 0.05;
+    
+    if (isVertical) {
+      // Vertical: centrar en mitad superior
+      targetX = (window.visualViewport.width - img.width * newScale) / 2;
+      targetY = (window.visualViewport.height * 0.5 - img.height * newScale) / 2;
     } else {
-      targetX = window.visualViewport.width * 0.25 - img.width * newScale * 0.5;
-      targetY = window.visualViewport.height * 0.5 - img.height * newScale * 0.5;
+      // Horizontal: centrar en mitad izquierda
+      targetX = (window.visualViewport.width * 0.5 - img.width * newScale) / 2;
+      targetY = (window.visualViewport.height - img.height * newScale) / 2;
     }
+    
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < columns; col++) {
         newPieces.push({
@@ -91,7 +102,6 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
           height: pieceHeight,
           row,
           col,
-          // isCorrect: false,
         });
         id++;
       }
@@ -102,22 +112,34 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
   };
 
   const scatterPieces = (newPieces) => {
+    const isVertical = window.visualViewport.height > window.visualViewport.width;
+    
     newPieces.forEach((piece) => {
       const node = pieceRefs.current[piece.id];
       if (node) {
         let randomX;
         let randomY;
-        if (window.visualViewport.width < 768) {
-          randomX = Math.random() * (window.visualViewport.width - piece.width);
-          randomY =
-          window.visualViewport.height * 0.6 +
-          Math.random() * (window.visualViewport.height * 0.4 - piece.height);
+        
+        if (isVertical) {
+          // Vertical: dispersar en mitad inferior
+          const scatterAreaWidth = window.visualViewport.width * 0.95;
+          const scatterAreaHeight = window.visualViewport.height * 0.45;
+          const scatterStartY = window.visualViewport.height * 0.52;
+          
+          randomX = (window.visualViewport.width - scatterAreaWidth) / 2 + 
+                    Math.random() * (scatterAreaWidth - piece.width);
+          randomY = scatterStartY + 
+                    Math.random() * (scatterAreaHeight - piece.height);
         } else {
-          randomX = window.visualViewport.width * 0.5 +
-          Math.random() * (window.visualViewport.width * 0.4 - piece.width);
-          randomY =
-          window.visualViewport.height * 0.6 +
-          Math.random() * (window.visualViewport.height * 0.3 - piece.height);
+          // Horizontal: dispersar en mitad derecha
+          const scatterAreaWidth = window.visualViewport.width * 0.45;
+          const scatterAreaHeight = window.visualViewport.height * 0.95;
+          const scatterStartX = window.visualViewport.width * 0.52;
+          
+          randomX = scatterStartX + 
+                    Math.random() * (scatterAreaWidth - piece.width);
+          randomY = (window.visualViewport.height - scatterAreaHeight) / 2 + 
+                    Math.random() * (scatterAreaHeight - piece.height);
         }
 
         node.to({
@@ -133,9 +155,6 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
     const isPuzzleComplete = pieces.every((piece) => piece.isCorrectPlace) && pieces.length > 0;
     if (isPuzzleComplete) {
       handleGameFinish(true);
-      // const song = new Audio("song.mp3");
-      // song.volume = 0;
-      // song.play();
       openModal(true);
     }
   }, [pieces]);
@@ -318,40 +337,42 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
   if (!image) return null;
 
   const handleDragStart = (e) => {
-  const node = e.target;
-  node.moveToTop();
+    const node = e.target;
+    node.moveToTop();
 
-  node.to({
-    scaleX: 1.1,
-    scaleY: 1.1,
-    duration: 0.01,
-    easing: Konva.Easings.EaseOut,
-  });
+    node.to({
+      scaleX: 1.1,
+      scaleY: 1.1,
+      duration: 0.01,
+      easing: Konva.Easings.EaseOut,
+    });
 
-  e.target.getStage().container().style.cursor = "grabbing";
+    e.target.getStage().container().style.cursor = "grabbing";
 
-  const id = node.id();
-  setPieces(pieces.map(p => ({
-    ...p,
-    isDragging: p.id === id,
-  })));
-};
+    const id = node.id();
+    setPieces(pieces.map(p => ({
+      ...p,
+      isDragging: p.id === id,
+    })));
+  };
 
   const handleDragEnd = (e) => {
     const node = e.target;
 
-  node.to({
-    scaleX: 1,
-    scaleY: 1,
-    duration: 0.15,
-    easing: Konva.Easings.EaseOut,
-  });
+    node.to({
+      scaleX: 1,
+      scaleY: 1,
+      duration: 0.15,
+      easing: Konva.Easings.EaseOut,
+    });
 
-  e.target.getStage().container().style.cursor = "grab";
+    e.target.getStage().container().style.cursor = "grab";
     const piece = e.target;
+    const isVertical = window.visualViewport.height > window.visualViewport.width;
     let tolerance = Math.max(pieces[0].width, pieces[0].height) * 0.18;
-    if(window.innerWidth < 768){
-      tolerance = tolerance*1.8;
+    
+    if(isVertical){
+      tolerance = tolerance * 1.8;
     }
 
     // Obtenemos la pieza correspondiente en snapPieces
@@ -393,16 +414,15 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
 
  
   return (
-    <div className="w-full h-[100dvh] flex justify-center items-center">
+    <div className="w-full h-[100dvh] flex justify-center items-center bg-[#e6b4bf]">
     
     <Stage width={window.visualViewport.width} height={window.visualViewport.height*0.999}       
     
     style={{
-      // backgroundColor: "#ff0000", // Color de fondo
-      backgroundImage: `url('fondo.png')`, // URL de la imagen
-      backgroundSize: 'cover', // Ajusta la imagen al tamaño del Stage
-      backgroundPosition: 'center', // Centra la imagen
-      backgroundRepeat: 'no-repeat', // Evita la repetición de la imagen
+      backgroundImage: `url('fondo.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
     }}
 >
       <Layer>
@@ -462,4 +482,3 @@ const PuzzleJigsaw = ({ handleGameFinish, imageUrl, rows, columns, openModal }) 
 };
 
 export default PuzzleJigsaw;
-

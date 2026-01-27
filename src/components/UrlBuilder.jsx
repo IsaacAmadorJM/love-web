@@ -48,9 +48,10 @@ export default function UrlBuilder() {
 
   // 👉 URL SOLO PARA PREVIEW (sin subir nada)
   const previewUrl = useMemo(() => {
+    if(mode == 'url') return imgUrl;
     if (imageFile) return URL.createObjectURL(imageFile);
     return imgUrl;
-  }, [imageFile, imgUrl]);
+  }, [imageFile, imgUrl, mode]);
 
   const uploadToCloudinary = async () => {
     if (!imageFile) return null;
