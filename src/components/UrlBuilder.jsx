@@ -46,7 +46,6 @@ export default function UrlBuilder() {
   const CLOUD_NAME = "dwxm3k3x1";
   const UPLOAD_PRESET = "mi_preset";
 
-  // 👉 URL SOLO PARA PREVIEW (sin subir nada)
   const previewUrl = useMemo(() => {
     if(mode == 'url') return imgUrl;
     if (imageFile) return URL.createObjectURL(imageFile);
@@ -105,7 +104,7 @@ export default function UrlBuilder() {
 
   return (
     <div className="max-w-dvw h-dvh bg-red-200 flex justify-center text-lg relative">
-      <div className="flex flex-col font-semibold items-center w-full h-dvh p-4 gap-3">
+      <div className="flex flex-col  items-center w-full h-dvh p-4 gap-3">
         {/* PREVIEW GRID */}
         <ImageGridPreview
           imageUrl={previewUrl}
@@ -152,12 +151,14 @@ export default function UrlBuilder() {
             className="min-w-[400px] sm:min-w-[600px] h-8 rounded-lg px-2 bg-red-100"
           />
         ) : (
+          <div className="flex w-full justify-center">
           <input
             type="file"
             accept="image/*"
             onChange={(e) => setImageFile(e.target.files[0])}
-            className="min-w-[400px] sm:min-w-[600px]"
+            className=""
           />
+          </div>
         )}
 
         {/* TEXT */}

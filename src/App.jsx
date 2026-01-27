@@ -19,8 +19,8 @@ function App() {
   const navigate = useNavigate();
 
   // helpers con defaults
-  const rows = clamp(Number(searchParams.get("x")), 1, 50, 2);
-  const cols = clamp(Number(searchParams.get("y")), 1, 50, 3);
+  const rows = clamp(Number(searchParams.get("x")), 1, 50, 5);
+  const cols = clamp(Number(searchParams.get("y")), 1, 50, 7);
   const imageUrl = searchParams.get("img") || "https://a.storyblok.com/f/112937/568x379/b8d91ebdb6/image-2019-02-12.jpg/m/620x0/filters:quality(70)/";
   const text = searchParams.get("txt") || "No puedo imaginar un mundo en el que no estés tú";
 
@@ -77,12 +77,12 @@ function App() {
       <Route
           path="/card"
           element={
-            <Card3d path="/model3d/kenny.glb" imgUrl="southpark.webp" />
-          }
-      />
+            <Card3d path="/model3d/card_eric.glb" imgUrl="southpark.webp" />}
+      ></Route>
       <Route
-      path='/crear'
-      element={<UrlBuilder/>}
+          path="/crear"
+          element={
+            <UrlBuilder />}
       ></Route>
 
       <Route path="*" element={<Navigate to="/" />} />
