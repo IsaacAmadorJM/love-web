@@ -74,6 +74,12 @@ function App() {
         element={gameFinished ? <Fireworks /> : <Navigate to="/" />}
       />
       <Route
+          path="/card"
+          element={
+            <Card3d path="/model3d/card_eric.glb" imgUrl="southpark.webp" />
+          }
+      />
+      <Route
       path='/crear'
       element={<UrlBuilder/>}
       ></Route>
