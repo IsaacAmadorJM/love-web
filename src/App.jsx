@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import PuzzleJigsaw from "./pages/PuzzleJigsaw";
 import Fireworks from "./pages/Fireworks";
+import Card3d from "./pages/Card3d";
 import PhotoFrame from "./components/PhotoFrame";
 import ImageModal from "./components/ImageModal";
 import UrlBuilder from "./components/UrlBuilder";
