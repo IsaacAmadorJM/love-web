@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -15,6 +16,9 @@ import TinyCharacter from "../components/tinyCharacter.jsx";
 
 const Fireworks = () => {
   const mountRef = useRef(null);
+  const [searchParams] = useSearchParams();
+  const showCharacter = searchParams.get("character") === "true";
+  
   console.log("mountRef", mountRef);
 
   useEffect(() => {
@@ -308,18 +312,20 @@ const Fireworks = () => {
           height: "100vh",
         }}
       />
-      <TinyCharacter
-        image="tiny-erick.webp" // URL de la imagen
-        position={{ top: "90dvh", right: "0vw" }} // Posición en la pantalla position
-        delay={17000} // Tiempo de espera en milisegundos (3 segundos)
-        redirectUrl="/card" // URL de redirección
-        direction="right" // Dirección de entrada ("left" o "right")
-        duration="3"
-        size="80px" // Tamaño del personaje
-        dialogImage="dialog.png" // URL de la burbuja de diálogo
-        dialogDuration={3000} // Duración de la burbuja en ms
-        dialogInterval={7000} // Intervalo de aparición de la burbuja en ms
-      />
+      {showCharacter && (
+        <TinyCharacter
+          image="tiny-erick.webp" // URL de la imagen
+          position={{ top: "90dvh", right: "0vw" }} // Posición en la pantalla position
+          delay={17000} // Tiempo de espera en milisegundos (3 segundos)
+          redirectUrl="/card" // URL de redirección
+          direction="right" // Dirección de entrada ("left" o "right")
+          duration="3"
+          size="80px" // Tamaño del personaje
+          dialogImage="dialog.png" // URL de la burbuja de diálogo
+          dialogDuration={3000} // Duración de la burbuja en ms
+          dialogInterval={7000} // Intervalo de aparición de la burbuja en ms
+        />
+      )}
     </div>
   );
 };
