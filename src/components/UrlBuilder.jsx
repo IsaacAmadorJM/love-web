@@ -35,6 +35,7 @@ export default function UrlBuilder() {
     "No puedo imaginar un mundo en el que no estés tú",
   );
   const [url, setUrl] = useState("");
+  const [showCharacter, setShowCharacter] = useState(false);
 
   const [mode, setMode] = useState("url");
   const [isUploading, setIsUploading] = useState(false);
@@ -92,6 +93,7 @@ export default function UrlBuilder() {
       y: safeY,
       txt: safeText,
       img: finalImgUrl,
+      ...(showCharacter && { character: "true" }),
     });
 
     setUrl(`${window.location.origin}?${params.toString()}`);
@@ -169,6 +171,20 @@ export default function UrlBuilder() {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
+
+        {/* SHOW CHARACTER CHECKBOX */}
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="showCharacter"
+            checked={showCharacter}
+            onChange={(e) => setShowCharacter(e.target.checked)}
+            className="w-4 h-4 cursor-pointer"
+          />
+          <label htmlFor="showCharacter" className="cursor-pointer text-sm">
+            Mostrar personaje durante los fuegos artificiales
+          </label>
+        </div>
 
         {/* GENERATE */}
         <button
